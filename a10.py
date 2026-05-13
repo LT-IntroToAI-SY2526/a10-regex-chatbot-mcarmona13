@@ -122,6 +122,26 @@ def get_birth_date(name: str) -> str:
 
     return match.group("birth")
 
+def get_death_date(name: str) -> str:
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
+    pattern = r"(?:Died\D*)(?P<death>\d{4}-\d{2}-\d{2})"
+    error_text = "Page infobox has no death information"
+    match =  get_match(infobox_text, pattern, error_text)
+    return match.group("death")
+
+def get_height(name: str) -> str:
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
+    pattern = r"(?:Height\D*)(?P<height>[\d.,]+ ?m)"
+    error_text = "Page infobox has no height information"
+    match = get_match(infobox_text, pattern, error_text)
+    return match.group("height")
+
+def get_population(city: str) -> str:
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(city)))
+    pattern = r"(?:Population\D*)(?P<pop>[\d,]+)"
+    error_text = "Page infobox has no population information"
+    match = get_match(infobox_text, pattern, error_text)
+    return match.group("pop")
 
 # below are a set of actions. Each takes a list argument and returns a list of answers
 # according to the action and the argument. It is important that each function returns a
@@ -151,6 +171,15 @@ def polar_radius(matches: List[str]) -> List[str]:
     """
     return [get_polar_radius(matches[0])]
 
+def death_date(matches: List[str]) -> List[str]:
+    return [get_death_date(" ".join(matches))]
+
+def height(matches: List[str]) -> List[str]:
+    return [get_height(" ".join(matches))]
+
+def population(matches: List[str]) -> List[str]:
+    return [get_population(" ".join(matches))]
+    
 
 # dummy argument is ignored and doesn't matter
 def bye_action(dummy: List[str]) -> None:
@@ -166,8 +195,24 @@ Action = Callable[[List[str]], List[Any]]
 # here, after all of the function definitions
 pa_list: List[Tuple[Pattern, Action]] = [
     ("when was % born".split(), birth_date),
+    
     ("what is the polar radius of %".split(), polar_radius),
+    
+    ("when did % die".split(), death_date),
+    ("what is %'s death date".split(), death_date),
+
+    ("how tall is %".split(), height),
+    ("what is the height of %".split(), height),
+    ("how big is %".split(), height),
+    
+    ("what is the population of %".split(), population),
+    ("how many people live in %".split(), population),
+
+    
+
     (["bye"], bye_action),
+
+    
 ]
 
 
