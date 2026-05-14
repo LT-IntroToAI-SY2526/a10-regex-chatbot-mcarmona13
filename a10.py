@@ -124,21 +124,21 @@ def get_birth_date(name: str) -> str:
 
 def get_currency(country: str) -> str:
     infobox_text = clean_text(get_first_infobox_text(get_page_html(country)))
-    pattern = r"(?:Currency\D*)(?P<currency>[A-Za-z0-9 ,().-]+)"
+    pattern = r"Currency\s*\n(?P<currency>[^\n]+)"
     error_text = "Page infobox has no currency information"
     match = get_match(infobox_text, pattern, error_text)
     return match.group("currency").strip()
 
 def get_date_format(country: str) -> str:
     infobox_text = clean_text(get_first_infobox_text(get_page_html(country)))
-    pattern = r"Date format[\s\S]*?(?P<format>\d{1,2}[./-]\d{1,2}[./-]\d{2,4})"
+    pattern = r"Date format\s*\n(?P<format>[^\n]+)"
     error_text = "Page infobox has no date format information"
     match = get_match(infobox_text, pattern, error_text)
     return match.group("format").strip()
 
 def get_calling_code(country: str) -> str:
     infobox_text = clean_text(get_first_infobox_text(get_page_html(country)))
-    pattern = r"(?:Calling code\D*)(?P<code>\+\d+)"
+    pattern = r"Calling code\s+(?P<code>\+\d+)"
     error_text = "Page infobox has no calling code information"
     match = get_match(infobox_text, pattern, error_text)
     return match.group("code").strip()
