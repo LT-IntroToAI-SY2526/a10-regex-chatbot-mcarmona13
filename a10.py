@@ -122,26 +122,27 @@ def get_birth_date(name: str) -> str:
 
     return match.group("birth")
 
-def get_death_date(name: str) -> str:
-    infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
-    pattern = r"(?:Died\D*)(?P<death>\d{4}-\d{2}-\d{2})"
-    error_text = "Page infobox has no death information"
-    match =  get_match(infobox_text, pattern, error_text)
-    return match.group("death")
-
-def get_height(name: str) -> str:
-    infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
-    pattern = r"(?:Height\D*)(?P<height>[\d.,]+ ?m)"
-    error_text = "Page infobox has no height information"
+def get_currency(country: str) -> str:
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(country)))
+    pattern = r"(?:Currency\D*)(?P<currency>[A-Za-z0-9 ,().-]+)"
+    error_text = "Page infobox has no currency information"
     match = get_match(infobox_text, pattern, error_text)
-    return match.group("height")
+    return match.group("currency").strip()
 
-def get_population(city: str) -> str:
-    infobox_text = clean_text(get_first_infobox_text(get_page_html(city)))
-    pattern = r"(?:Population\D*)(?P<pop>[\d,]+)"
-    error_text = "Page infobox has no population information"
+def get_date_format(country: str) -> str:
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(country)))
+    pattern = r"Date format[\s\S]*?(?P<format>\d{1,2}[./-]\d{1,2}[./-]\d{2,4})"
+    error_text = "Page infobox has no date format information"
     match = get_match(infobox_text, pattern, error_text)
-    return match.group("pop")
+    return match.group("format").strip()
+
+def get_calling_code(country: str) -> str:
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(country)))
+    pattern = r"(?:Calling code\D*)(?P<code>\+\d+)"
+    error_text = "Page infobox has no calling code information"
+    match = get_match(infobox_text, pattern, error_text)
+    return match.group("code").strip()
+
 
 # below are a set of actions. Each takes a list argument and returns a list of answers
 # according to the action and the argument. It is important that each function returns a
@@ -171,15 +172,14 @@ def polar_radius(matches: List[str]) -> List[str]:
     """
     return [get_polar_radius(matches[0])]
 
-def death_date(matches: List[str]) -> List[str]:
-    return [get_death_date(" ".join(matches))]
+def currency(matches: List[str]) -> List[str]:
+    return [get_currency(" ".join(matches))]
 
-def height(matches: List[str]) -> List[str]:
-    return [get_height(" ".join(matches))]
+def date_format(matches: List[str]) -> List[str]:
+    return [get_date_format(" ".join(matches))]
 
-def population(matches: List[str]) -> List[str]:
-    return [get_population(" ".join(matches))]
-    
+def calling_code(matches: List[str]) -> List[str]:
+    return [get_calling_code(" ".join(matches))]
 
 # dummy argument is ignored and doesn't matter
 def bye_action(dummy: List[str]) -> None:
@@ -198,15 +198,16 @@ pa_list: List[Tuple[Pattern, Action]] = [
     
     ("what is the polar radius of %".split(), polar_radius),
     
-    ("when did % die".split(), death_date),
-    ("what is %'s death date".split(), death_date),
+    ("what is the currency of %".split(), currency),
+    ("what currency does % use".split(), currency),
 
-    ("how tall is %".split(), height),
-    ("what is the height of %".split(), height),
-    ("how big is %".split(), height),
-    
-    ("what is the population of %".split(), population),
-    ("how many people live in %".split(), population),
+    ("what is the date format of %".split(), date_format),
+    ("what date format does % use".split(), date_format),
+
+    ("what is the calling code of %".split(), calling_code),
+    ("what calling code does % use".split(), calling_code),
+    ("what is %'s calling code".split(), calling_code),
+
 
     
 
