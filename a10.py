@@ -124,25 +124,24 @@ def get_birth_date(name: str) -> str:
 
 def get_currency(country: str) -> str:
     infobox_text = clean_text(get_first_infobox_text(get_page_html(country)))
-    pattern = r"Currency\s*\n(?P<currency>[^\n]+)"
+    pattern = r"Currency\s*\n(?P<currency>[^\n\[]+)"
     error_text = "Page infobox has no currency information"
     match = get_match(infobox_text, pattern, error_text)
     return match.group("currency").strip()
 
 def get_date_format(country: str) -> str:
     infobox_text = clean_text(get_first_infobox_text(get_page_html(country)))
-    pattern = r"Date format\s*\n(?P<format>[^\n]+)"
+    pattern = r"Date format\s*\n(?P<format>[^\n\[]+)"
     error_text = "Page infobox has no date format information"
     match = get_match(infobox_text, pattern, error_text)
     return match.group("format").strip()
 
 def get_calling_code(country: str) -> str:
     infobox_text = clean_text(get_first_infobox_text(get_page_html(country)))
-    pattern = r"Calling code\s+(?P<code>\+\d+)"
+    pattern = r"Calling code\s*\n(?P<code>\+[\d\s,+]+)"
     error_text = "Page infobox has no calling code information"
     match = get_match(infobox_text, pattern, error_text)
     return match.group("code").strip()
-
 
 # below are a set of actions. Each takes a list argument and returns a list of answers
 # according to the action and the argument. It is important that each function returns a
