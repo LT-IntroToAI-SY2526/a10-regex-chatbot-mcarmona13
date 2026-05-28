@@ -4,6 +4,10 @@ from match import match
 from typing import List, Callable, Tuple, Any, Match
 
 
+# ============================================================
+# WIKIPEDIA CORE FUNCTIONS (YOUR ORIGINAL CODE)
+# ============================================================
+
 def get_page_html(title: str) -> str:
     for attempt in range(5):
         response = requests.get(
@@ -70,168 +74,229 @@ def get_match(
     return result
 
 
-def get_polar_radius(planet_name: str) -> str:
-    infobox_text = clean_text(
-        get_first_infobox_text(get_page_html(planet_name))
-    )
+# ============================================================
+# WIKIPEDIA SUMMARY FUNCTION FOR ADVENTURE MODE
+# ============================================================
 
-    pattern = r"(?:Polar radius|Mean radius).*?(?P<radius>[\d,\.]+)\s*km"
+def get_wiki_summary(name: str) -> str:
+    """
+    Fetches the first meaningful paragraph from a Wikipedia page.
+    """
+    try:
+        html = get_page_html(name)
+        soup = BeautifulSoup(html, "html.parser")
 
-    result = get_match(
-        infobox_text,
-        pattern,
-        "Page infobox has no radius information",
-    )
+        paragraphs = soup.find_all("p")
+        for p in paragraphs:
+            text = p.get_text().strip()
+            if len(text) > 50:
+                return clean_text(text)
 
-    return result.group("radius") + " km"
+        return "No readable summary found."
 
-
-def get_birth_date(name: str) -> str:
-    infobox_text = clean_text(
-        get_first_infobox_text(get_page_html(name))
-    )
-
-    pattern = r"Born.*?(?P<birth>\d{4}-\d{2}-\d{2})"
-
-    result = get_match(
-        infobox_text,
-        pattern,
-        "Page infobox has no birth information",
-    )
-
-    return result.group("birth")
+    except Exception as e:
+        return f"Error fetching info: {e}"
 
 
-def get_currency(country: str) -> str:
-    infobox_text = clean_text(
-        get_first_infobox_text(get_page_html(country))
-    )
+# ============================================================
+# ADVENTURE MODE FUNCTIONS (UPDATED)
+# ============================================================
 
-    pattern = r"Currency\s*\n(?P<currency>[^\n]+)"
-
-    result = get_match(
-        infobox_text,
-        pattern,
-        "Page infobox has no currency information",
-    )
-
-    return result.group("currency").strip()
+def start_star_wars_adventure(matches: List[str]) -> List[str]:
+    return [
+        "You awaken in a Jedi Temple. A hooded figure approaches.",
+        "Choose your path:",
+        "- JOIN THE JEDI",
+        "- JOIN THE SITH",
+        "- BECOME A BOUNTY HUNTER"
+    ]
 
 
-def get_date_format(country: str) -> str:
-    infobox_text = clean_text(
-        get_first_infobox_text(get_page_html(country))
-    )
-
-    pattern = r"Date format\s*\n(?P<format>[^\n]+)"
-
-    result = get_match(
-        infobox_text,
-        pattern,
-        "Page infobox has no date format information",
-    )
-
-    return result.group("format").strip()
+def choose_path(matches: List[str]) -> List[str]:
+    path = " ".join(matches)
+    return [
+        f"You chose: {path.upper()}",
+        "",
+        "Now choose your master.",
+        "Type: MASTER <name>",
+        "Example: MASTER Yoda, MASTER Anakin Skywalker, MASTER Darth Sidious"
+    ]
 
 
-def get_calling_code(country: str) -> str:
-    infobox_text = clean_text(
-        get_first_infobox_text(get_page_html(country))
-    )
+def choose_master(matches: List[str]) -> List[str]:
+    master = " ".join(matches)
+    info = get_wiki_summary(master)
 
-    pattern = r"Calling code\s*\n(?P<code>\+[\d\s,\-\(\)]+)"
-
-    result = get_match(
-        infobox_text,
-        pattern,
-        "Page infobox has no calling code information",
-    )
-
-    return result.group("code").strip()
-
-
-# ACTIONS
-
-def birth_date(matches: List[str]) -> List[str]:
-    return [get_birth_date(" ".join(matches))]
+    return [
+        f"Your master is {master.title()}.",
+        "",
+        "Information from Wikipedia:",
+        info,
+        "",
+        "Now choose a planet to train on.",
+        "Type: PLANET <planet name>"
+    ]
 
 
-def polar_radius(matches: List[str]) -> List[str]:
-    return [get_polar_radius(" ".join(matches))]
+def choose_planet(matches: List[str]) -> List[str]:
+    planet = " ".join(matches)
+    info = get_wiki_summary(planet)
+
+    return [
+        f"You travel to {planet.title()} to begin your training.",
+        "",
+        "Planet information:",
+        info,
+        "",
+        "Now choose someone to fight.",
+        "Type: FIGHT <character name>"
+    ]
 
 
-def currency(matches: List[str]) -> List[str]:
-    return [get_currency(" ".join(matches))]
+def choose_enemy(matches: List[str]) -> List[str]:
+    enemy = " ".join(matches)
+    info = get_wiki_summary(enemy)
+
+    return [
+        f"You prepare to face {enemy.title()} in battle.",
+        "",
+        "Enemy information:",
+        info,
+        "",
+        "Now choose your lightsaber color.",
+        "Type: COLOR <blue/green/red/purple/yellow>"
+    ]
 
 
-def date_format(matches: List[str]) -> List[str]:
-    return [get_date_format(" ".join(matches))]
+def choose_color(matches: List[str]) -> List[str]:
+    color = " ".join(matches).lower()
+
+    descriptions = {
+        "blue": "Blue lightsabers are used by Jedi Guardians.",
+        "green": "Green lightsabers are used by Jedi Consulars.",
+        "red": "Red lightsabers are used by the Sith.",
+        "purple": "Purple lightsabers symbolize balance.",
+        "yellow": "Yellow lightsabers are used by Temple Guards."
+    }
+
+    desc = descriptions.get(color, "A rare and mysterious lightsaber color.")
+
+    return [
+        f"You ignite a {color.upper()} lightsaber.",
+        desc,
+        "",
+        "Now choose a starship.",
+        "Type: SHIP <ship name>"
+    ]
 
 
-def calling_code(matches: List[str]) -> List[str]:
-    return [get_calling_code(" ".join(matches))]
+def choose_ship(matches: List[str]) -> List[str]:
+    ship = " ".join(matches)
+    info = get_wiki_summary(ship)
+
+    return [
+        f"You board the {ship.title()}.",
+        "",
+        "Starship information:",
+        info,
+        "",
+        "Now choose your final mission.",
+        "Type: MISSION <rescue/infiltrate/destroy>"
+    ]
 
 
-def bye_action(dummy: List[str]) -> None:
-    raise KeyboardInterrupt
+def choose_mission(matches: List[str]) -> List[str]:
+    mission = " ".join(matches).lower()
 
+    endings = {
+        "rescue": "You embark on a daring rescue mission to save captured allies.",
+        "infiltrate": "You sneak into an enemy base to gather intelligence.",
+        "destroy": "You lead an assault to destroy a major enemy stronghold."
+    }
+
+    text = endings.get(mission, "You forge your own destiny in the galaxy.")
+
+    return [
+        text,
+        "",
+        "Your Star Wars journey ends... for now."
+    ]
+
+
+# ============================================================
+# DIRECT WIKIPEDIA LOOKUP
+# ============================================================
+
+def direct_lookup(matches: List[str]) -> List[str]:
+    name = " ".join(matches)
+    return [get_wiki_summary(name)]
+
+
+# ============================================================
+# PATTERN LIST
+# ============================================================
 
 Pattern = List[str]
 Action = Callable[[List[str]], List[Any]]
 
-
 pa_list: List[Tuple[Pattern, Action]] = [
 
-    ("when was % born".split(), birth_date),
+    # Start adventure
+    (["start", "star", "wars", "adventure"], start_star_wars_adventure),
 
-    ("what is the polar radius of %".split(), polar_radius),
+    # Choose path
+    (["join", "the", "%"], choose_path),
+    (["become", "a", "bounty", "hunter"], choose_path),
 
-    ("what is the currency of %".split(), currency),
-    ("what currency does % use".split(), currency),
+    # Choose master
+    ("master %".split(), choose_master),
 
-    ("what is the date format of %".split(), date_format),
-    ("what date format does % use".split(), date_format),
+    # Choose planet
+    ("planet %".split(), choose_planet),
 
-    ("what is the calling code of %".split(), calling_code),
-    ("what calling code does % use".split(), calling_code),
-    ("what is %s calling code".split(), calling_code),
+    # Choose enemy
+    ("fight %".split(), choose_enemy),
 
-    (["bye"], bye_action),
+    # Choose lightsaber color
+    ("color %".split(), choose_color),
+
+    # Choose ship
+    ("ship %".split(), choose_ship),
+
+    # Choose mission
+    ("mission %".split(), choose_mission),
+
+    # Direct lookup
+    ("who is %".split(), direct_lookup),
+    ("tell me about %".split(), direct_lookup),
 ]
 
 
-def search_pa_list(src: List[str]) -> List[str]:
+# ============================================================
+# MAIN LOOP
+# ============================================================
 
+def search_pa_list(src: List[str]) -> List[str]:
     for pat, act in pa_list:
         mat = match(pat, src)
-
         if mat is not None:
             try:
-                answer = act(mat)
-                return answer if answer else ["No answers"]
-
+                return act(mat)
             except Exception as e:
                 return [str(e)]
-
-    return ["I don't understand"]
+    return ["I don't understand."]
 
 
 def query_loop() -> None:
-
-    print("Welcome to the wikipedia chatbot!\n")
+    print("Welcome to the Wikipedia-powered Star Wars Adventure Chatbot!\n")
 
     while True:
         try:
-            print()
-
-            query = input("Your query? ")
+            query = input("\nYour query: ")
             query = query.replace("?", "").lower().split()
-
             answers = search_pa_list(query)
-
             for ans in answers:
                 print(ans)
-
         except (KeyboardInterrupt, EOFError):
             break
 
